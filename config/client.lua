@@ -1,4 +1,6 @@
 return {
+    enableTrackerAudio = true, -- set to false if u want to disable the beep coming from police tracker
+
     classSprites = {
         1,
         1,

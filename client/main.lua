@@ -1,5 +1,6 @@
 local Blips = require 'client.blip'
 local playerBlips = {}
+local audioPlayers = {}
 local dutyBlips = GlobalState.dutyJobs
 local isWhitelisted = false
 
@@ -66,24 +67,39 @@ RegisterNetEvent('Renewed-Dutyblips:client:updateDutyBlips', function(data)
     end
 end)
 
+local function playAudio(ped)
+    local soundId = GetSoundId()
+    PlaySoundFromEntity(soundId, 'Beep_Red', ped, 'DLC_HEIST_HACKING_SNAKE_SOUNDS', false, 0)
+    ReleaseSoundId(soundId)
+end
+
+local enableTrackerAudio = require 'config.client'.enableTrackerAudio
+
 local myId = ('player:%s'):format(cache.serverId)
 AddStateBagChangeHandler('renewed_dutyblips', nil, function(bagName, _, value)
-    if isWhitelisted and bagName ~= myId then
-        local source = tonumber(bagName:gsub('player:', ''), 10)
+    local source = tonumber(bagName:gsub('player:', ''), 10)
 
-        local blip = playerBlips[source]
+    local blip = playerBlips[source]
 
-        if not value and blip then
+    if not value then
+        if blip then
             RemoveBlip(blip)
             playerBlips[source] = nil
-
-            return
         end
 
-        local playerId = GetPlayerFromServerId(source)
+        return
+    end
 
-        local pedHandle = getPedHandle(playerId)
+    local playerId = GetPlayerFromServerId(source)
 
+    local pedHandle = getPedHandle(playerId)
+
+    if enableTrackerAudio then
+        audioPlayers[#audioPlayers+1] = pedHandle
+        playAudio(pedHandle)
+    end
+
+    if isWhitelisted and bagName ~= myId then
         if pedHandle then
             if blip then
                 RemoveBlip(blip)
@@ -112,6 +128,26 @@ CreateThread(function()
         Wait(2500)
     end
 end)
+
+if enableTrackerAudio then
+    CreateThread(function()
+        while true do
+            if next(audioPlayers) then
+                for i = 1, #audioPlayers do
+                    local ped = audioPlayers[i]
+
+                    if DoesEntityExist(ped) then
+                        playAudio(ped)
+                    else
+                        audioPlayers[i] = nil
+                    end
+                end
+            end
+            Wait(math.random(15, 30) * 1000)
+        end
+    end)
+
+end
 
 AddEventHandler('Renewed-Lib:client:PlayerLoaded', function(player)
     isWhitelisted = isGroupsWhitelisted(player.group)
