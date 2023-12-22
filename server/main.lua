@@ -36,6 +36,12 @@ end
 
 AddEventHandler('Renewed-Lib:server:playerLoaded', itemCheck)
 
+AddEventHandler('Renewed-Lib:server:playerRemoved', function(source)
+    if duty.isDuty(source) then
+        duty.remove(source, true)
+    end
+end)
+
 -- Supports server restarts, but this is very bad please don't restart this with many players online
 AddEventHandler('onResourceStart', function(resource)
     if resource == GetCurrentResourceName() then

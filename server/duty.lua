@@ -46,7 +46,7 @@ function duty.add(source, playerData)
 end
 
 function duty.remove(source, forced)
-    local hasItem = exports.ox_inventory:GetItemCount(source, Config.itemName) > 0
+    local hasItem = not forced and exports.ox_inventory:GetItemCount(source, Config.itemName) > 0
 
     if not hasItem or forced then
         dutyBlips[source] = nil
