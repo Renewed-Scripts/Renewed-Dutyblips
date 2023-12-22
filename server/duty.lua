@@ -10,7 +10,7 @@ function duty.getDutyPlayers()
 end
 
 local function groupCheck(source, playerData)
-    local groups = playerData.groups or Renewed.getPlayerGroups(source)
+    local groups = playerData.Groups or Renewed.getPlayerGroups(source)
 
     for job, color in pairs(Config.dutyJobs) do
         if groups[job] then
