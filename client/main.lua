@@ -141,26 +141,35 @@ if enableTrackerAudio then
                     else
                         audioPlayers[i] = nil
                     end
+
+                    Wait(500)
                 end
             end
-            Wait(math.random(15, 30) * 1000)
+
+            Wait(math.random(9, 15) * 1000)
         end
     end)
-
 end
+
 
 AddEventHandler('Renewed-Lib:client:PlayerLoaded', function(player)
     isWhitelisted = isGroupsWhitelisted(player.group)
 end)
 
 AddEventHandler('Renewed-Lib:client:UpdateGroup', function(groups)
+    local wasWhitelisted = isWhitelisted
+
     isWhitelisted = isGroupsWhitelisted(groups)
 
-    if not isWhitelisted and next(playerBlips) then
-        for source, blip in pairs(playerBlips) do
-            RemoveBlip(blip)
-            playerBlips[source] = nil
+    if wasWhitelisted ~= isWhitelisted then
+        if next(playerBlips) then
+            for source, blip in pairs(playerBlips) do
+                RemoveBlip(blip)
+                playerBlips[source] = nil
+            end
         end
+
+        TriggerServerEvent('Renewed-Dutyblips:server:updateMeBlip', isWhitelisted)
     end
 end)
 

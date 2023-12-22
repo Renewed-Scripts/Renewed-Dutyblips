@@ -32,7 +32,6 @@ function duty.add(source, playerData)
     if jobColor then
         dutyBlips[source] = {
             name = playerData.name,
-            charId = playerData.charId,
             ped = GetPlayerPed(source),
             color = jobColor
         }
@@ -41,10 +40,10 @@ function duty.add(source, playerData)
     end
 end
 
-function duty.remove(source)
+function duty.remove(source, forced)
     local hasItem = exports.ox_inventory:GetItemCount(source, Config.itemName) > 0
 
-    if not hasItem then
+    if not hasItem or forced then
         dutyBlips[source] = nil
         Player(source).state:set('renewed_dutyblips', false, true)
     end

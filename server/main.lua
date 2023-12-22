@@ -4,8 +4,8 @@ local duty = require 'server.duty'
 GlobalState.dutyJobs = Config.dutyJobs
 
 local function triggerBlipEvent(activeBlips, eventName, eventData)
-    for playerId in pairs(activeBlips) do
-        TriggerClientEvent(eventName, playerId, eventData)
+    for _, officer in pairs(activeBlips) do
+        TriggerClientEvent(eventName, officer.source, eventData)
     end
 end
 
@@ -90,9 +90,7 @@ exports.ox_inventory:registerHook('createItem', function(payload)
 
     if type(source) == 'number' and DoesPlayerExist(source) and not duty.isDuty(source) then
         SetTimeout(100, function()
-            local hasItem = exports.ox_inventory:GetItemCount(source, Config.itemName) > 0
-
-            if hasItem then
+            if exports.ox_inventory:GetItemCount(source, Config.itemName) > 0 then
                 duty.add(source)
             end
         end)
@@ -104,3 +102,13 @@ end, {
         [Config.itemName] = true,
     },
 })
+
+RegisterNetEvent('Renewed-Dutyblips:server:updateMeBlip', function(isWhitelisted)
+    if isWhitelisted then
+        if exports.ox_inventory:GetItemCount(source, Config.itemName) > 0 then
+            duty.add(source)
+        end
+    elseif duty.isDuty(source) then
+        duty.remove(source, true)
+    end
+end)
