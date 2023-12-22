@@ -90,6 +90,8 @@ AddStateBagChangeHandler('renewed_dutyblips', nil, function(bagName, _, value)
     local source = tonumber(bagName:gsub('player:', ''), 10)
 
     local blip = playerBlips[source]
+    local playerId = GetPlayerFromServerId(source)
+    local pedHandle = getPedHandle(playerId)
 
     if not value then
         if blip then
@@ -97,12 +99,16 @@ AddStateBagChangeHandler('renewed_dutyblips', nil, function(bagName, _, value)
             playerBlips[source] = nil
         end
 
+        if pedHandle then
+            local index = doesPedHandleExsist(pedHandle)
+
+            if index then
+                table.remove(audioPlayers, index)
+            end
+        end
+
         return
     end
-
-    local playerId = GetPlayerFromServerId(source)
-
-    local pedHandle = getPedHandle(playerId)
 
     if enableTrackerAudio and not doesPedHandleExsist(pedHandle) then
         audioPlayers[#audioPlayers+1] = pedHandle
