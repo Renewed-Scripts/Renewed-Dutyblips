@@ -68,18 +68,25 @@ end)
 
 local myId = ('player:%s'):format(cache.serverId)
 AddStateBagChangeHandler('renewed_dutyblips', nil, function(bagName, _, value)
-    if value and isWhitelisted and bagName ~= myId then
+    if isWhitelisted and bagName ~= myId then
         local source = tonumber(bagName:gsub('player:', ''), 10)
+
+        local blip = playerBlips[source]
+
+        if not value and blip then
+            RemoveBlip(blip)
+            playerBlips[source] = nil
+
+            return
+        end
 
         local playerId = GetPlayerFromServerId(source)
 
         local pedHandle = getPedHandle(playerId)
 
         if pedHandle then
-            local hadBlip = playerBlips[source]
-
-            if hadBlip then
-                RemoveBlip(hadBlip)
+            if blip then
+                RemoveBlip(blip)
             end
 
             playerBlips[source] = Blips.addBlipForEntity(pedHandle, value)
