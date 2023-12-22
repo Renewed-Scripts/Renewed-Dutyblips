@@ -73,8 +73,17 @@ local function playAudio(ped)
     ReleaseSoundId(soundId)
 end
 
-local enableTrackerAudio = require 'config.client'.enableTrackerAudio
+local function doesPedHandleExsist(ped)
+    for i = 1, #audioPlayers do
+        if audioPlayers[i] == ped then
+            return true
+        end
+    end
 
+    return false
+end
+
+local enableTrackerAudio = require 'config.client'.enableTrackerAudio
 local myId = ('player:%s'):format(cache.serverId)
 AddStateBagChangeHandler('renewed_dutyblips', nil, function(bagName, _, value)
     local source = tonumber(bagName:gsub('player:', ''), 10)
@@ -94,7 +103,7 @@ AddStateBagChangeHandler('renewed_dutyblips', nil, function(bagName, _, value)
 
     local pedHandle = getPedHandle(playerId)
 
-    if enableTrackerAudio then
+    if enableTrackerAudio and not doesPedHandleExsist(pedHandle) then
         audioPlayers[#audioPlayers+1] = pedHandle
         playAudio(pedHandle)
     end
@@ -170,6 +179,15 @@ AddEventHandler('Renewed-Lib:client:UpdateGroup', function(groups)
         end
 
         TriggerServerEvent('Renewed-Dutyblips:server:updateMeBlip', isWhitelisted)
+    end
+end)
+
+RegisterNetEvent('Renewed-Dutyblips:client:removedOfficer', function(officerSource)
+    local blip = playerBlips[officerSource]
+
+    if blip then
+        RemoveBlip(blip)
+        playerBlips[officerSource] = nil
     end
 end)
 

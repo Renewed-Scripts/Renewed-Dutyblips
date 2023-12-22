@@ -4,6 +4,11 @@ local Config = require 'config.server'
 local duty = {}
 local dutyBlips = {}
 
+function duty.TriggerOfficerEvent(eventName, eventData)
+    for source, _ in pairs(dutyBlips) do
+        TriggerClientEvent(eventName, source, eventData)
+    end
+end
 
 function duty.getDutyPlayers()
     return dutyBlips
@@ -46,6 +51,7 @@ function duty.remove(source, forced)
     if not hasItem or forced then
         dutyBlips[source] = nil
         Player(source).state:set('renewed_dutyblips', false, true)
+        duty.TriggerOfficerEvent('Renewed-Dutyblips:client:removedOfficer', source)
     end
 end
 

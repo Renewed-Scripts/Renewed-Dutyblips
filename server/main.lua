@@ -3,12 +3,6 @@ local duty = require 'server.duty'
 
 GlobalState.dutyJobs = Config.dutyJobs
 
-local function triggerBlipEvent(activeBlips, eventName, eventData)
-    for _, officer in pairs(activeBlips) do
-        TriggerClientEvent(eventName, officer.source, eventData)
-    end
-end
-
 SetInterval(function()
     local n = 0
     local activeBlips = {}
@@ -24,7 +18,7 @@ SetInterval(function()
         }
     end
 
-    triggerBlipEvent(activeBlips, 'Renewed-Dutyblips:client:updateDutyBlips', activeBlips)
+    duty.TriggerOfficerEvent('Renewed-Dutyblips:client:updateDutyBlips', activeBlips)
 end, 5000)
 
 
