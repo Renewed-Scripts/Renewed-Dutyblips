@@ -155,6 +155,13 @@ end)
 
 AddEventHandler('Renewed-Lib:client:UpdateGroup', function(groups)
     isWhitelisted = isGroupsWhitelisted(groups)
+
+    if not isWhitelisted and next(playerBlips) then
+        for source, blip in pairs(playerBlips) do
+            RemoveBlip(blip)
+            playerBlips[source] = nil
+        end
+    end
 end)
 
 AddEventHandler('onResourceStart', function(resource)
