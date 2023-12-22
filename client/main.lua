@@ -29,7 +29,8 @@ end
 
 local function createPedBlip(blipData)
     local playerId = GetPlayerFromServerId(blipData.source)
-    local blipExsist = playerBlips[blipData.source]
+    local currentBlip = playerBlips[blipData.source]
+    local blipExsist = DoesBlipExist(currentBlip)
     local playerNearby = NetworkIsPlayerActive(playerId)
 
     if blipExsist and playerNearby then
@@ -44,11 +45,11 @@ local function createPedBlip(blipData)
         end
     end
 
-    if not blipExsist and not playerNearby then
+    if not playerNearby and not DoesBlipExist(currentBlip) then
         return Blips.addBlipForCoord(blipData.coords, blipData)
     end
 
-    SetBlipCoords(blipExsist, blipData.coords.x, blipData.coords.y, blipData.coords.z)
+    SetBlipCoords(currentBlip, blipData.coords.x, blipData.coords.y, blipData.coords.z)
 
     return false
 end
