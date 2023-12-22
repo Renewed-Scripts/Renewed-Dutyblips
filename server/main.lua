@@ -25,7 +25,7 @@ SetInterval(function()
     end
 
     triggerBlipEvent(activeBlips, 'Renewed-Dutyblips:client:updateDutyBlips', activeBlips)
-end, 1000)
+end, 5000)
 
 
 local function itemCheck(source, playerData)
