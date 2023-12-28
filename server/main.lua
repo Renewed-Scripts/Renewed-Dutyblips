@@ -34,7 +34,9 @@ local function itemCheck(source, playerData)
     end
 end
 
-AddEventHandler('Renewed-Lib:server:playerLoaded', itemCheck)
+AddEventHandler('Renewed-Lib:server:playerLoaded', function(source)
+    itemCheck(source)
+end)
 
 AddEventHandler('Renewed-Lib:server:playerRemoved', function(source)
     if duty.isDuty(source) then
