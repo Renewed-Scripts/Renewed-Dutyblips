@@ -30,8 +30,8 @@ function duty.isDuty(source)
     return dutyBlips[source]
 end
 
-function duty.add(source, playerData)
-    playerData = playerData or Renewed.getPlayer(source)
+function duty.add(source)
+    local playerData = Renewed.getPlayer(source)
     local jobColor = groupCheck(source, playerData)
 
     if jobColor then

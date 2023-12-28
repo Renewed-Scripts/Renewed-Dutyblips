@@ -77,7 +77,7 @@ end
 local function doesPedHandleExsist(ped)
     for i = 1, #audioPlayers do
         if audioPlayers[i] == ped then
-            return true
+            return i
         end
     end
 
@@ -102,8 +102,8 @@ AddStateBagChangeHandler('renewed_dutyblips', nil, function(bagName, _, value)
         if pedHandle then
             local index = doesPedHandleExsist(pedHandle)
 
-            if index then
-                table.remove(audioPlayers, index)
+            if index and index > 0 then
+                audioPlayers[index] = nil
             end
         end
 

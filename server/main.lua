@@ -22,13 +22,13 @@ SetInterval(function()
 end, 5000)
 
 
-local function itemCheck(source, playerData)
+local function itemCheck(source)
     local Items = exports.ox_inventory:GetInventoryItems(source)
 
     if Items and next(Items) then
         for _, item in pairs(Items) do
             if item.name == Config.itemName then
-                return duty.add(source, playerData)
+                return duty.add(source)
             end
         end
     end
@@ -73,7 +73,7 @@ exports.ox_inventory:registerHook('swapItems', function(payload)
     local isOnDuty = duty.isDuty(source)
 
     if adding and not isOnDuty then
-        duty.add(source, playerData)
+        duty.add(source)
     elseif not adding and isOnDuty then
         SetTimeout(100, function()
             duty.remove(source)
