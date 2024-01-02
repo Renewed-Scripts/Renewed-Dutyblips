@@ -86,6 +86,7 @@ end
 
 local enableTrackerAudio = require 'config.client'.enableTrackerAudio
 local myId = ('player:%s'):format(cache.serverId)
+local playerState = LocalPlayer.state
 AddStateBagChangeHandler('renewed_dutyblips', nil, function(bagName, _, value)
     local source = tonumber(bagName:gsub('player:', ''), 10)
 
@@ -99,7 +100,7 @@ AddStateBagChangeHandler('renewed_dutyblips', nil, function(bagName, _, value)
             playerBlips[source] = nil
         end
 
-        if pedHandle then
+        if pedHandle and enableTrackerAudio then
             local index = doesPedHandleExsist(pedHandle)
 
             if index and index > 0 then
@@ -115,7 +116,7 @@ AddStateBagChangeHandler('renewed_dutyblips', nil, function(bagName, _, value)
         playAudio(pedHandle)
     end
 
-    if isWhitelisted and bagName ~= myId then
+    if isWhitelisted and bagName ~= myId and playerState.renewed_dutyblips then
         if pedHandle then
             if blip then
                 RemoveBlip(blip)
