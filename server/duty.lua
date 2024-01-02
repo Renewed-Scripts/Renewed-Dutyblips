@@ -52,6 +52,7 @@ function duty.remove(source, forced)
         dutyBlips[source] = nil
         Player(source).state:set('renewed_dutyblips', false, true)
         duty.TriggerOfficerEvent('Renewed-Dutyblips:client:removedOfficer', source)
+        TriggerClientEvent('Renewed-Dutyblips:client:removeNearbyOfficers', source)
     end
 end
 

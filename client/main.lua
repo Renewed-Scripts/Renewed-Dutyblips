@@ -190,6 +190,15 @@ AddEventHandler('Renewed-Lib:client:UpdateGroup', function(groups)
     end
 end)
 
+RegisterNetEvent('Renewed-Dutyblips:client:removeNearbyOfficers', function()
+    if next(playerBlips) then
+        for source, blip in pairs(playerBlips) do
+            RemoveBlip(blip)
+            playerBlips[source] = nil
+        end
+    end
+end)
+
 RegisterNetEvent('Renewed-Dutyblips:client:removedOfficer', function(officerSource)
     local blip = playerBlips[officerSource]
 
