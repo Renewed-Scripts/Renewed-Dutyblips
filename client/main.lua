@@ -4,11 +4,13 @@ local audioPlayers = {}
 local dutyBlips = GlobalState.dutyJobs
 local isWhitelisted = false
 
+local Utils = require 'client.utils'
+
 local getGroups = exports['Renewed-Lib']:getLib().getPlayerGroup
 
 local NetworkIsPlayerActive = NetworkIsPlayerActive
 local GetPlayerFromServerId = GetPlayerFromServerId
-local GetPlayerPed = GetPlayerPed
+local DoesBlipExist = DoesBlipExist
 
 local function isGroupsWhitelisted(groups)
     if groups then
@@ -18,13 +20,6 @@ local function isGroupsWhitelisted(groups)
             end
         end
     end
-end
-
-local function getPedHandle(playerId)
-    return lib.waitFor(function()
-        local ped = GetPlayerPed(playerId)
-        if ped > 0 then return ped end
-    end, ('%s Player didnt exsist in time! (%s)'):format(playerId, bagName), 10000)
 end
 
 local function createPedBlip(blipData)
@@ -38,14 +33,14 @@ local function createPedBlip(blipData)
     end
 
     if not blipExsist and playerNearby then
-        local pedHandle = getPedHandle(playerId)
+        local pedHandle = Utils.awaitPedHandle(playerId)
 
         if pedHandle then
             return Blips.addBlipForEntity(pedHandle, blipData)
         end
     end
 
-    if not playerNearby and not DoesBlipExist(currentBlip) then
+    if not playerNearby and not blipExsist then
         return Blips.addBlipForCoord(blipData.coords, blipData)
     end
 
@@ -54,7 +49,7 @@ local function createPedBlip(blipData)
     return false
 end
 
-RegisterNetEvent('Renewed-Dutyblips:client:updateDutyBlips', function(data)
+Utils.registerNetEvent('Renewed-Dutyblips:client:updateDutyBlips', function(data)
     for i = 1, #data do
         local blipData = data[i]
         local source = blipData.source
@@ -68,22 +63,6 @@ RegisterNetEvent('Renewed-Dutyblips:client:updateDutyBlips', function(data)
     end
 end)
 
-local function playAudio(ped)
-    local soundId = GetSoundId()
-    PlaySoundFromEntity(soundId, 'Beep_Red', ped, 'DLC_HEIST_HACKING_SNAKE_SOUNDS', false, 0)
-    ReleaseSoundId(soundId)
-end
-
-local function doesPedHandleExsist(ped)
-    for i = 1, #audioPlayers do
-        if audioPlayers[i] == ped then
-            return i
-        end
-    end
-
-    return false
-end
-
 local enableTrackerAudio = require 'config.client'.enableTrackerAudio
 local myId = ('player:%s'):format(cache.serverId)
 local playerState = LocalPlayer.state
@@ -92,7 +71,7 @@ AddStateBagChangeHandler('renewed_dutyblips', nil, function(bagName, _, value)
 
     local blip = playerBlips[source]
     local playerId = GetPlayerFromServerId(source)
-    local pedHandle = getPedHandle(playerId)
+    local pedHandle = Utils.awaitPedHandle(playerId)
 
     if not value then
         if blip then
@@ -101,7 +80,7 @@ AddStateBagChangeHandler('renewed_dutyblips', nil, function(bagName, _, value)
         end
 
         if pedHandle and enableTrackerAudio then
-            local index = doesPedHandleExsist(pedHandle)
+            local index = lib.table.contains(audioPlayers, pedHandle)
 
             if index and index > 0 then
                 audioPlayers[index] = nil
@@ -111,9 +90,9 @@ AddStateBagChangeHandler('renewed_dutyblips', nil, function(bagName, _, value)
         return
     end
 
-    if enableTrackerAudio and not doesPedHandleExsist(pedHandle) then
+    if enableTrackerAudio and not lib.table.contains(audioPlayers, pedHandle) then
         audioPlayers[#audioPlayers+1] = pedHandle
-        playAudio(pedHandle)
+        Utils.playEntityAudio(pedHandle)
     end
 
     if isWhitelisted and bagName ~= myId and playerState.renewed_dutyblips then
@@ -134,15 +113,16 @@ CreateThread(function()
                 local playerId = GetPlayerFromServerId(source)
 
                 if NetworkIsPlayerActive(playerId) then
-                    local playerPed = getPedHandle(playerId)
+                    local playerPed = Utils.awaitPedHandle(playerId)
 
                     if playerPed then
                         Blips.changeBlipForEntity(blip, playerPed)
                     end
+
                 end
             end
         end
-        Wait(2500)
+        Wait(1500)
     end
 end)
 
@@ -154,12 +134,12 @@ if enableTrackerAudio then
                     local ped = audioPlayers[i]
 
                     if DoesEntityExist(ped) then
-                        playAudio(ped)
+                        Utils.playEntityAudio(ped)
                     else
                         audioPlayers[i] = nil
                     end
 
-                    Wait(500)
+                    Wait(math.random(100, 500))
                 end
             end
 
@@ -168,6 +148,23 @@ if enableTrackerAudio then
     end)
 end
 
+Utils.registerNetEvent('Renewed-Dutyblips:client:removeNearbyOfficers', function()
+    if next(playerBlips) then
+        for source, blip in pairs(playerBlips) do
+            RemoveBlip(blip)
+            playerBlips[source] = nil
+        end
+    end
+end)
+
+Utils.registerNetEvent('Renewed-Dutyblips:client:removedOfficer', function(officerSource)
+    local blip = playerBlips[officerSource]
+
+    if blip then
+        RemoveBlip(blip)
+        playerBlips[officerSource] = nil
+    end
+end)
 
 AddEventHandler('Renewed-Lib:client:PlayerLoaded', function(player)
     isWhitelisted = isGroupsWhitelisted(player.group)
@@ -187,24 +184,6 @@ AddEventHandler('Renewed-Lib:client:UpdateGroup', function(groups)
         end
 
         TriggerServerEvent('Renewed-Dutyblips:server:updateMeBlip', isWhitelisted)
-    end
-end)
-
-RegisterNetEvent('Renewed-Dutyblips:client:removeNearbyOfficers', function()
-    if next(playerBlips) then
-        for source, blip in pairs(playerBlips) do
-            RemoveBlip(blip)
-            playerBlips[source] = nil
-        end
-    end
-end)
-
-RegisterNetEvent('Renewed-Dutyblips:client:removedOfficer', function(officerSource)
-    local blip = playerBlips[officerSource]
-
-    if blip then
-        RemoveBlip(blip)
-        playerBlips[officerSource] = nil
     end
 end)
 

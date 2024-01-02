@@ -19,8 +19,7 @@ SetInterval(function()
     end
 
     duty.TriggerOfficerEvent('Renewed-Dutyblips:client:updateDutyBlips', activeBlips)
-end, 5000)
-
+end, math.random(3, 5) * 1000)
 
 local function itemCheck(source)
     local Items = exports.ox_inventory:GetInventoryItems(source)

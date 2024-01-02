@@ -22,4 +22,5 @@ server_scripts {
 files {
     'config/client.lua',
     'client/blip.lua',
+    'client/utils.lua'
 }
