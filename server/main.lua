@@ -68,12 +68,20 @@ exports.ox_inventory:registerHook('swapItems', function(payload)
     if payload.fromInventory == payload.toInventory then return true end -- If they are just swapping slots, don't do anything
     local source = payload.source
 
-    local adding = type(payload.fromInventory) == 'string' and payload.toInventory == source
+    local adding = payload.toInventory == source
 
     local isOnDuty = duty.isDuty(source)
 
-    if adding and not isOnDuty then
-        duty.add(source)
+    if adding then
+        if type(payload.fromInventory) == 'number' and duty.isDuty(payload.fromInventory) then
+            SetTimeout(100, function()
+                duty.remove(payload.fromInventory)
+            end)
+        end
+
+        if not isOnDuty then
+            duty.add(source)
+        end
     elseif not adding and isOnDuty then
         SetTimeout(100, function()
             duty.remove(source)
