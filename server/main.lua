@@ -34,6 +34,7 @@ local function itemCheck(source)
 end
 
 AddEventHandler('Renewed-Lib:server:playerLoaded', function(source)
+    Wait(3000)
     itemCheck(source)
 end)
 
