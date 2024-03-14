@@ -49,3 +49,9 @@ end, {
         [itemName] = true,
     },
 })
+
+AddEventHandler('Renewed-Lib:server:playerRemoved', function(source)
+    if inService[source] then
+        duty.remove(source)
+    end
+end)
