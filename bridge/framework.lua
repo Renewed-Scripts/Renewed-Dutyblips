@@ -1,3 +1,5 @@
+if not lib.checkDependency('Renewed-Lib', '1.1.7', true) then return end
+
 local dutyGroup = require 'config.server'.dutyJobs
 local duty = require 'server.duty'
 local wasInService = {}
