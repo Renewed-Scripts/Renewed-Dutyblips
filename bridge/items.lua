@@ -55,3 +55,9 @@ AddEventHandler('Renewed-Lib:server:playerRemoved', function(source)
         duty.remove(source)
     end
 end)
+
+AddEventHandler('playerDropped', function()
+    if inService[source] then
+        duty.remove(source)
+    end
+end)

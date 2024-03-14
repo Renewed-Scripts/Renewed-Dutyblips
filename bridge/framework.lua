@@ -27,6 +27,13 @@ AddEventHandler('Renewed-Lib:server:playerRemoved', function(source)
 end)
 
 
+AddEventHandler('playerDropped', function()
+    if wasInService[source] then
+        duty.remove(source)
+    end
+end)
+
+
 -- Not the most optimized but who cares people shouldnt restart their resources on liveuse
 AddEventHandler('onServerResourceStart', function(res)
     if res == cache.resource then

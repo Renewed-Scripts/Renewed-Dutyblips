@@ -42,7 +42,7 @@ local function addPolice(source)
             Player(source).state:set('renewed_dutyblips', true, true)
 
             local copData = {
-                name = playerData.name,
+                name = playerData.name or Renewed.getCharName(source),
                 ped = GetPlayerPed(source),
                 source = source,
                 color = getBlipColor
