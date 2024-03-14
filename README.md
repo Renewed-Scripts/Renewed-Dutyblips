@@ -6,8 +6,10 @@ Consider supporting me on [ko-fi](https://ko-fi.com/FjamZoo)
 A Dutyblip script that updates blips based on the players job and statebag.
 
 ### Features
-- Optimized, (1.5-2x faster than similar dutyscripts like qb-policejob)
+- Optimized, (2x-3x faster than similar dutyscripts like qb-policejob)
+- up to 80% less network usage than other duty scripts
 - Tracking with GPS tracker item
+- Framework duty blips (can be used without ox_inventory dependency)
 - Configurable blips
 - Blips per vehicle class
 - Blips per job
@@ -29,6 +31,10 @@ A Dutyblip script that updates blips based on the players job and statebag.
 		label = 'Police Tracker',
 		weight = 1000,
 		stack = false,
+		consume = 0,
+		server = {
+			export = 'Renewed-Dutyblips.toggleItem'
+		}
 	},
 ```
 

@@ -1,194 +1,118 @@
-local Blips = require 'client.blip'
-local playerBlips = {}
-local audioPlayers = {}
-local dutyBlips = GlobalState.dutyJobs
-local isWhitelisted = false
-
 local Utils = require 'client.utils'
+local Blips = require 'client.blip'
+local cops = {}
+local nearbyCops = {}
+local whiteListed = false
 
-local getGroups = exports['Renewed-Lib']:getLib().getPlayerGroup
-
-local NetworkIsPlayerActive = NetworkIsPlayerActive
-local GetPlayerFromServerId = GetPlayerFromServerId
-local DoesBlipExist = DoesBlipExist
-
-local function isGroupsWhitelisted(groups)
-    if groups then
-        for group, _ in pairs(dutyBlips) do
-            if groups[group] then
-                return true
-            end
-        end
-    end
-end
-
-local function createPedBlip(blipData)
-    local playerId = GetPlayerFromServerId(blipData.source)
-    local currentBlip = playerBlips[blipData.source]
-    local blipExsist = DoesBlipExist(currentBlip)
-    local playerNearby = NetworkIsPlayerActive(playerId)
-
-    if blipExsist and playerNearby then
-        return
-    end
-
-    if not blipExsist and playerNearby then
-        local pedHandle = Utils.awaitPedHandle(playerId)
-
-        if pedHandle then
-            return Blips.addBlipForEntity(pedHandle, blipData)
-        end
-    end
-
-    if not playerNearby and not blipExsist then
-        return Blips.addBlipForCoord(blipData.coords, blipData)
-    end
-
-    SetBlipCoords(currentBlip, blipData.coords.x, blipData.coords.y, blipData.coords.z)
-
-    return false
-end
-
-Utils.registerNetEvent('Renewed-Dutyblips:client:updateDutyBlips', function(data)
+Utils.registerNetEvent('Renewed-Dutyblips:updateBlips', function(data)
     for i = 1, #data do
-        local blipData = data[i]
-        local source = blipData.source
-        if source ~= cache.serverId then
-            local blip = createPedBlip(blipData)
+        local cop = cops[i]
 
-            if blip then
-                playerBlips[source] = blip
+        if not nearbyCops[cop.source] and cop.source ~= cache.serverId then
+            if cop.blip then
+                Blips.changeBlipCoords(cop.blip, data[i])
+            else
+                cop.blip = Blips.addBlipForCoord(data[i], {
+                    color = cop.color,
+                    name = cop.name,
+                })
             end
         end
     end
 end)
 
-local enableTrackerAudio = require 'config.client'.enableTrackerAudio
-local myId = ('player:%s'):format(cache.serverId)
-local playerState = LocalPlayer.state
+local function getCopFromSource(source)
+    for i = 1, #cops do
+        if cops[i].source == source then
+            return i
+        end
+    end
+end
+
 AddStateBagChangeHandler('renewed_dutyblips', nil, function(bagName, _, value)
     local source = tonumber(bagName:gsub('player:', ''), 10)
 
-    local blip = playerBlips[source]
-    local playerId = GetPlayerFromServerId(source)
-    local pedHandle = Utils.awaitPedHandle(playerId)
-
-    if not value then
-        if blip then
-            RemoveBlip(blip)
-            playerBlips[source] = nil
-        end
-
-        if pedHandle and enableTrackerAudio then
-            local index = lib.table.contains(audioPlayers, pedHandle)
-
-            if index and index > 0 then
-                audioPlayers[index] = nil
-            end
-        end
-
+    if not whiteListed or source == cache.serverId or not value then
         return
     end
 
-    if enableTrackerAudio and not lib.table.contains(audioPlayers, pedHandle) then
-        audioPlayers[#audioPlayers+1] = pedHandle
-        Utils.playEntityAudio(pedHandle)
-    end
+    local index = getCopFromSource(source)
 
-    if isWhitelisted and bagName ~= myId and playerState.renewed_dutyblips then
+    if index then
+        local playerId = GetPlayerFromServerId(source)
+        local pedHandle = Utils.awaitPedHandle(playerId)
+
         if pedHandle then
-            if blip then
-                RemoveBlip(blip)
+            local cop = cops[index]
+
+            if cop.blip then
+                RemoveBlip(cop.blip)
             end
 
-            playerBlips[source] = Blips.addBlipForEntity(pedHandle, value)
+            cop.blip = Blips.addBlipForEntity(pedHandle, cop)
+            nearbyCops[source] = true
+        end
+    end
+
+end)
+
+RegisterNetEvent('onPlayerDropped', function(serverId)
+    if nearbyCops[serverId] then
+        nearbyCops[serverId] = nil
+        local index = getCopFromSource(serverId)
+        local cop = index and cops[index]
+
+        if cop then
+            local blipCoord = GetBlipCoords(cop.blip)
+
+            RemoveBlip(cop.blip)
+
+            cop.blip = Blips.addBlipForCoord(blipCoord, {
+                color = cop.color,
+                name = cop.name,
+            })
         end
     end
 end)
 
-CreateThread(function()
-    while true do
-        if isWhitelisted and next(playerBlips) then
-            for source, blip in pairs(playerBlips) do
-                local playerId = GetPlayerFromServerId(source)
 
-                if NetworkIsPlayerActive(playerId) then
-                    local playerPed = Utils.awaitPedHandle(playerId)
-
-                    if playerPed then
-                        Blips.changeBlipForEntity(blip, playerPed)
-                    end
-
-                end
-            end
-        end
-        Wait(1500)
-    end
+Utils.registerNetEvent('Renewed-Dutyblips:addOfficer', function(data)
+    cops[#cops+1] = {
+        source = tonumber(data.source),
+        name = data.name,
+        color = data.color or 1,
+    }
 end)
 
-if enableTrackerAudio then
-    CreateThread(function()
-        while true do
-            if next(audioPlayers) then
-                for i = 1, #audioPlayers do
-                    local ped = audioPlayers[i]
+Utils.registerNetEvent('Renewed-Dutyblips:removeOfficer', function(index)
+    table.remove(cops, index)
+end)
 
-                    if DoesEntityExist(ped) then
-                        Utils.playEntityAudio(ped)
-                    else
-                        audioPlayers[i] = nil
-                    end
 
-                    Wait(math.random(100, 500))
-                end
-            end
+Utils.registerNetEvent('Renewed-Dutyblips:goOffDuty', function()
+    for i = 1, #cops do
+        local cop = cops[i]
 
-            Wait(math.random(9, 15) * 1000)
-        end
-    end)
-end
-
-Utils.registerNetEvent('Renewed-Dutyblips:client:removeNearbyOfficers', function()
-    if next(playerBlips) then
-        for source, blip in pairs(playerBlips) do
-            RemoveBlip(blip)
-            playerBlips[source] = nil
+        if cop.blip then
+            RemoveBlip(cop.blip)
         end
     end
+
+    table.wipe(cops)
+    table.wipe(nearbyCops)
+    whiteListed = false
 end)
 
-Utils.registerNetEvent('Renewed-Dutyblips:client:removedOfficer', function(officerSource)
-    local blip = playerBlips[officerSource]
+Utils.registerNetEvent('Renewed-Dutyblips:goOnDuty', function(copsData)
+    for i = 1, #copsData do
+        local cop = copsData[i]
 
-    if blip then
-        RemoveBlip(blip)
-        playerBlips[officerSource] = nil
+        cops[i] = {
+            source = tonumber(cop.source),
+            name = cop.name,
+            color = cop.color or 1,
+        }
     end
-end)
 
-AddEventHandler('Renewed-Lib:client:PlayerLoaded', function(player)
-    isWhitelisted = isGroupsWhitelisted(player.group)
-end)
-
-AddEventHandler('Renewed-Lib:client:UpdateGroup', function(groups)
-    local wasWhitelisted = isWhitelisted
-
-    isWhitelisted = isGroupsWhitelisted(groups)
-
-    if wasWhitelisted ~= isWhitelisted then
-        if next(playerBlips) then
-            for source, blip in pairs(playerBlips) do
-                RemoveBlip(blip)
-                playerBlips[source] = nil
-            end
-        end
-
-        TriggerServerEvent('Renewed-Dutyblips:server:updateMeBlip', isWhitelisted)
-    end
-end)
-
-AddEventHandler('onResourceStart', function(resource)
-    if resource == GetCurrentResourceName() then
-        isWhitelisted = isGroupsWhitelisted(getGroups())
-    end
+    whiteListed = true
 end)

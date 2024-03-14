@@ -1,6 +1,4 @@
 return {
-    enableTrackerAudio = false, -- set to true if u want to enable the beep coming from police tracker
-
     classSprites = {
         1, -- class 1
         1, -- class 2
@@ -17,7 +15,7 @@ return {
         422, -- class 13
         424, -- class 14
         422, -- class 15 helicopters
-        198, -- class 16 
+        198, -- class 16
         750, -- class 17
         56, -- class 18 emergency
         477, -- class 19

@@ -15,13 +15,17 @@ end
 local function getBlipSprite(pedHandle)
     local sprite = 1
     local vehicle = GetVehiclePedIsIn(pedHandle, false)
-    local class = vehicle and GetVehicleClass(vehicle)
+    local class = vehicle and (GetVehicleClass(vehicle))
 
     return class and Config.classSprites[class] or sprite
 end
 
+function Blips.changeBlipCoords(blip, coords)
+    SetBlipCoords(blip, coords.x, coords.y, 0.0)
+end
+
 function Blips.addBlipForCoord(coords, blipData)
-    local blip = AddBlipForCoord(coords.x, coords.y, coords.z)
+    local blip = AddBlipForCoord(coords.x, coords.y, 0.0)
     applyBlipSettings(blip, blipData.color, blipData.name, 1)
 
     return blip
