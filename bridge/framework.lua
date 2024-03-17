@@ -35,6 +35,7 @@ AddEventHandler('onServerResourceStart', function(res)
     if res == cache.resource then
         Wait(500)
         for _, source in ipairs(GetPlayers()) do
+            source = tonumber(source, 10)
             local inService = Player(source).state.renewed_service
 
             if inService then
