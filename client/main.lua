@@ -29,6 +29,26 @@ local function getCopFromSource(source)
     end
 end
 
+local loopRunning = false
+local function nearbyLoop()
+    if loopRunning then return end
+    loopRunning = true
+
+    while next(nearbyCops) do
+        for i = 1, #cops do
+            local cop = cops[i]
+
+            local pedHandle = nearbyCops[cop.source]
+
+            if cop.blip and pedHandle then
+                Blips.changeBlipForEntity(cop.blip, pedHandle)
+            end
+
+        end
+        Wait(1000)
+    end
+end
+
 AddStateBagChangeHandler('renewed_dutyblips', nil, function(bagName, _, value)
     local source = tonumber(bagName:gsub('player:', ''), 10)
 
@@ -47,10 +67,15 @@ AddStateBagChangeHandler('renewed_dutyblips', nil, function(bagName, _, value)
 
             if cop.blip then
                 RemoveBlip(cop.blip)
+                cop.blip = nil
             end
 
             cop.blip = Blips.addBlipForEntity(pedHandle, cop)
-            nearbyCops[source] = true
+            nearbyCops[source] = pedHandle
+
+            if not loopRunning then
+                SetTimeout(0, nearbyLoop)
+            end
         end
     end
 
@@ -62,7 +87,7 @@ RegisterNetEvent('onPlayerDropped', function(serverId)
         local index = getCopFromSource(serverId)
         local cop = index and cops[index]
 
-        if cop then
+        if cop and cop.blip then
             local blipCoord = GetBlipCoords(cop.blip)
 
             RemoveBlip(cop.blip)
@@ -85,7 +110,15 @@ Utils.registerNetEvent('Renewed-Dutyblips:addOfficer', function(data)
 end)
 
 Utils.registerNetEvent('Renewed-Dutyblips:removeOfficer', function(index)
-    table.remove(cops, index)
+    if cops[index] then
+        local blip = cops[index].blip
+
+        if blip then
+            RemoveBlip(blip)
+        end
+
+        table.remove(cops, index)
+    end
 end)
 
 

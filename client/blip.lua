@@ -12,7 +12,7 @@ local function applyBlipSettings(blip, color, name, sprite)
     EndTextCommandSetBlipName(blip)
 end
 
-local function getBlipSprite(pedHandle)
+function Blips.getBlipSprite(pedHandle)
     local sprite = 1
     local vehicle = GetVehiclePedIsIn(pedHandle, false)
     local class = vehicle and (GetVehicleClass(vehicle))
@@ -32,7 +32,7 @@ function Blips.addBlipForCoord(coords, blipData)
 end
 
 function Blips.changeBlipForEntity(blip, pedHandle)
-    local newSprite = getBlipSprite(pedHandle)
+    local newSprite = Blips.getBlipSprite(pedHandle)
 
     if newSprite ~= GetBlipSprite(blip) then
         local color = GetBlipColour(blip)
@@ -43,7 +43,7 @@ end
 
 function Blips.addBlipForEntity(pedHandle, blipData)
     local blip = AddBlipForEntity(pedHandle)
-    applyBlipSettings(blip, blipData.color, blipData.name, getBlipSprite(pedHandle))
+    applyBlipSettings(blip, blipData.color, blipData.name, Blips.getBlipSprite(pedHandle))
     SetBlipShowCone(blip, true)
 
     return blip
