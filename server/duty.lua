@@ -21,7 +21,6 @@ local function triggerDutyEvent(eventName, eventData)
     end
 end
 
-
 local function isCopOnDuty(source)
     for i = 1, #currentDuty do
         if currentDuty[i].source == source then
@@ -61,16 +60,14 @@ local function addPolice(source)
 end
 
 local function removePolice(source)
-    if isCopOnDuty(source) then
-        local index = isCopOnDuty(source)
+    local index = isCopOnDuty(source)
 
-        if index then
-            table.remove(currentDuty, index)
+    if index then
+        table.remove(currentDuty, index)
 
-            Player(source).state:set('renewed_dutyblips', false, true)
-            triggerDutyEvent('Renewed-Dutyblips:removeOfficer', index)
-            TriggerClientEvent('Renewed-Dutyblips:goOffDuty', source)
-        end
+        Player(source).state:set('renewed_dutyblips', false, true)
+        triggerDutyEvent('Renewed-Dutyblips:removeOfficer', index)
+        TriggerClientEvent('Renewed-Dutyblips:goOffDuty', source)
     end
 end
 
