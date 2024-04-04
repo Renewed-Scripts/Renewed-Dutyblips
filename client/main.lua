@@ -8,18 +8,21 @@ Utils.registerNetEvent('Renewed-Dutyblips:updateBlips', function(data)
     for i = 1, #data do
         local cop = cops[i]
 
-        if not nearbyCops[cop.source] and cop.source ~= cache.serverId then
-            if cop.blip then
-                Blips.changeBlipCoords(cop.blip, data[i])
-            else
-                cop.blip = Blips.addBlipForCoord(data[i], {
-                    color = cop.color,
-                    name = cop.name,
-                })
+        if cop then
+            if not nearbyCops[cop.source] and cop.source ~= cache.serverId then
+                if cop.blip then
+                    Blips.changeBlipCoords(cop.blip, data[i])
+                else
+                    cop.blip = Blips.addBlipForCoord(data[i], {
+                        color = cop.color,
+                        name = cop.name,
+                    })
+                end
             end
         end
     end
 end)
+
 
 local function getCopFromSource(source)
     for i = 1, #cops do
