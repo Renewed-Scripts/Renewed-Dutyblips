@@ -9,7 +9,10 @@ version '2.0.0'
 
 shared_script '@ox_lib/init.lua'
 client_script 'client/main.lua'
-server_script 'server/main.lua'
+server_script {
+    'server/main.lua',
+    'bridge/*.lua',
+}
 
 files {
     'config/client.lua',
