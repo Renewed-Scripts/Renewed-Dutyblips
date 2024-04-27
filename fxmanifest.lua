@@ -8,14 +8,12 @@ description 'Renewed Dutyblips'
 version '2.0.0'
 
 shared_script '@ox_lib/init.lua'
-client_script 'client/main.lua'
+client_script 'client/*.lua'
 server_script {
-    'server/main.lua',
-    'bridge/*.lua',
+    'server/*.lua',
 }
 
 files {
-    'config/client.lua',
-    'client/blip.lua',
-    'client/utils.lua'
+    'config/*.lua',
+    'bridge/*.lua',
 }
