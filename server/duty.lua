@@ -1,13 +1,10 @@
-local Renewed = exports['Renewed-Lib']:getLib()
 local currentDuty = {}
 local jobs = require 'config.server'.dutyJobs
 
 
-local function groupCheck(source, playerData)
-    local groups = playerData.Groups or Renewed.getPlayerGroups(source)
-
+local function groupCheck(playerGroups)
     for job, color in pairs(jobs) do
-        if groups[job] then
+        if playerGroups[job] then
             return color
         end
     end
@@ -35,13 +32,17 @@ local function addPolice(source)
     if not isCopOnDuty(source) then
         local playerData = Renewed.getPlayer(source)
 
-        local getBlipColor = groupCheck(source, playerData)
+        if not playerData then
+            return
+        end
+
+        local getBlipColor = groupCheck(playerData.Groups)
 
         if getBlipColor then
             Player(source).state:set('renewed_dutyblips', true, true)
 
             local copData = {
-                name = playerData.name or Renewed.getCharName(source),
+                name = playerData.name,
                 ped = GetPlayerPed(source),
                 source = source,
                 color = getBlipColor

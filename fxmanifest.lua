@@ -7,7 +7,10 @@ lua54 'yes'
 description 'Renewed Dutyblips'
 version '2.0.0'
 
-shared_script '@ox_lib/init.lua'
+shared_scripts {
+    '@ox_lib/init.lua',
+    '@Renewed-Lib/init.lua'
+}
 client_script 'client/main.lua'
 server_script 'server/main.lua'
 
