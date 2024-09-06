@@ -5,7 +5,7 @@ use_experimental_fxv2_oal 'yes'
 lua54 'yes'
 
 description 'Renewed Dutyblips'
-version '2.0.0'
+version '2.0.1'
 
 shared_scripts {
     '@ox_lib/init.lua',
