@@ -30,7 +30,7 @@ end
 
 local function addPolice(source)
     if not isCopOnDuty(source) then
-        local playerData = Renewed.getPlayer(source)
+        local playerData = Renewed.getPlayer(source) -- luacheck: ignore
 
         if not playerData then
             return
