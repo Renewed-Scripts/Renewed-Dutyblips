@@ -1,3 +1,5 @@
+lib.versionCheck('Renewed-Scripts/Renewed-Dutyblips')
+
 local blipType = require 'config.server'.blipType
 local dutyBlips = require 'server.duty'
 
