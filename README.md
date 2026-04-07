@@ -39,4 +39,4 @@ A Dutyblip script that updates blips based on the players job and statebag.
 ```
 
 ### Credits
-Thanks to MikeyXB for the tracker image
+Thanks to MikeyXB for the tracker imagea
